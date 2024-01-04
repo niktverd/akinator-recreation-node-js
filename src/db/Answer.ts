@@ -12,8 +12,10 @@ class Answer extends Model {
   }
 
   id!: number;
-  login!: string;
+  text!: string;
   is_doctor!: boolean;
+  possibility!: number;
+  countOfGamesWhenWasAsTarget?: number;
 }
 
 export default Answer;

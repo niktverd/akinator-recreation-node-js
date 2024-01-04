@@ -12,8 +12,8 @@ class User extends Model {
   }
 
   id!: number;
-  text!: string;
-  hidden_from_ui!: boolean;
+  login!: string;
+  is_doctor!: boolean;
 }
 
 export default User;

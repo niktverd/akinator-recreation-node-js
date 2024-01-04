@@ -12,9 +12,10 @@ class Question extends Model {
   }
 
   id!: number;
-  login!: string;
+  text!: string;
   is_doctor!: boolean;
   shown_only_for_doctors!: boolean;
+  possibilityOfThisIsNext!: number;
 }
 
 export default Question;
