@@ -1,11 +1,12 @@
-import GameDetail from '@/db/GameDetail';
 import { Algorithm } from '@/logic/common';
 import type { NextApiRequest, NextApiResponse } from 'next';
+
+import * as gameDetailsApi from '../../../src/api/game-details';
 
 
 async function get(_req: NextApiRequest, res: NextApiResponse) {
     try {
-        const gameDetails = await GameDetail.query().select();
+        const gameDetails = await gameDetailsApi.getList();
 
         return res.status(201).json(gameDetails);
     } catch (error) {
@@ -21,11 +22,10 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
         if (algorithm === Algorithm.TimesAskedWhenThinkAbout) {
             const {answer_id, question_id} = req.body;
 
-            const result = await GameDetail.query().select()
-                .innerJoin('gameHistory', 'gameDetails.game_id', 'gameHistory.game_id')
-                .where({answer_id})
-                .andWhere({question_id})
-                .count();
+            const result = await gameDetailsApi.getAnswerQuestionPopularity({
+                answer_id,
+                question_id,
+            });
 
             return res.status(201).json(result[0]);
         }
@@ -33,19 +33,18 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
         if (algorithm === Algorithm.ReactionCountWhenThinkAboutAnswer) {
             const {answer_id, question_id, reaction_id} = req.body;
 
-            const result = await GameDetail.query().select()
-                .innerJoin('gameHistory', 'gameDetails.game_id', 'gameHistory.game_id')
-                .where({answer_id})
-                .andWhere({question_id})
-                .andWhere({reaction_id})
-                .count();
+            const result = await gameDetailsApi.getAnswerQuestionReactionPopularity({
+                answer_id,
+                question_id,
+                reaction_id,
+            });
 
             return res.status(201).json(result[0]);
         }
 
         if (algorithm === Algorithm.SaveGameDetails) {
             const {game_id, question_id, reaction_id} = req.body;
-            const gameDetail = await GameDetail.query().insert({
+            const gameDetail = await gameDetailsApi.add({
                 game_id,
                 question_id,
                 reaction_id,
