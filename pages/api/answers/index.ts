@@ -1,10 +1,11 @@
-import Answer from '@/db/Answer';
 import type { NextApiRequest, NextApiResponse } from 'next';
+
+import * as answerApi from '../../../src/api/answers';
 
 
 async function get(_req: NextApiRequest, res: NextApiResponse) {
     try {
-        const answers = await Answer.query().select();
+        const answers = await answerApi.getList();
 
         return res.status(201).json(answers);
     } catch (error) {
@@ -16,7 +17,7 @@ async function get(_req: NextApiRequest, res: NextApiResponse) {
 async function post(req: NextApiRequest, res: NextApiResponse) {
     try {
         const {text} = req.body;
-        await Answer.query().insert({
+        await answerApi.add({
             text,
         });
 
@@ -31,7 +32,8 @@ async function patch(req: NextApiRequest, res: NextApiResponse) {
     try {
         const id = Number(req.query.id)
         const {text} = req.body;
-        await Answer.query().updateAndFetchById(id, {
+        await answerApi.update({
+            id, 
             text,
         });
 
@@ -45,7 +47,7 @@ async function patch(req: NextApiRequest, res: NextApiResponse) {
 async function del(req: NextApiRequest, res: NextApiResponse) {
     try {
         const id = Number(req.query.id)
-        await Answer.query().deleteById(id);
+        await answerApi.remove(id);
 
         return await get(req, res);
     } catch (error) {

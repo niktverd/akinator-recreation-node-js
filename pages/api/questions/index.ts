@@ -1,4 +1,3 @@
-import Question from '@/db/Question';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import * as questionApi from '../../../src/api/questions';
