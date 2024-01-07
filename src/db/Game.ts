@@ -12,7 +12,7 @@ class Game extends Model {
   }
 
   id!: number;
-  user_id!: string;
+  user_id!: number;
   is_finished!: boolean;
   is_succeed!: boolean;
 }
