@@ -1,10 +1,12 @@
 import Question from '@/db/Question';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import * as questionApi from '../../../src/api/questions';
+
 
 async function get(req: NextApiRequest, res: NextApiResponse) {
     try {
-        const questions = await Question.query().select();
+        const questions = await questionApi.getList();
 
         return res.status(201).json(questions);
     } catch (error) {
@@ -16,7 +18,7 @@ async function get(req: NextApiRequest, res: NextApiResponse) {
 async function post(req: NextApiRequest, res: NextApiResponse) {
     try {
         const {text, hidden_from_ui = false, shown_only_for_doctors = false, possibility_of_this_is_next = 0} = req.body;
-        await Question.query().insert({
+        await questionApi.add({
             text,
             hidden_from_ui,
             shown_only_for_doctors,
@@ -34,9 +36,8 @@ async function patch(req: NextApiRequest, res: NextApiResponse) {
     try {
         const id = Number(req.query.id)
         const {text} = req.body;
-        await Question.query().updateAndFetchById(id, {
-            text,
-        });
+
+        await questionApi.update({id, text});
 
         return await get(req, res);
     } catch (error) {
@@ -48,7 +49,7 @@ async function patch(req: NextApiRequest, res: NextApiResponse) {
 async function del(req: NextApiRequest, res: NextApiResponse) {
     try {
         const id = Number(req.query.id)
-        await Question.query().deleteById(id);
+        await questionApi.remove(id);
 
         return await get(req, res);
     } catch (error) {
