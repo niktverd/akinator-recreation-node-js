@@ -4,11 +4,9 @@ import DbQuestionsEditor from "./dbQuestionsEditor";
 import Answer from "@/models/Answer";
 import Db, { GameHistory } from "./db";
 import Fuzz from '../fuzzy-logic/fuzz';
+import { ApriorAnswerPossibilityType } from "@/common/types";
+import { Reaction, ReactionEnt } from "@/models/Reaction";
 
-enum ApriorAnswerPossibilityType {
-    Standard,
-    Intelligent,
-};
 
 class GameLogic {
     private db: Db = new Db();
@@ -72,7 +70,7 @@ class GameLogic {
 
             const diffPosForReactions: number[] = [];
 
-            Object.keys(Reaction).forEach(async (react) => {
+            Object.keys(ReactionEnt).forEach(async (react) => {
                 var tmp = await this.ExactReactionOnQuestionRelativelyAnswerPossibility(react, q, answersWithMaxPoss);
     
                 diffPosForReactions.push(tmp);
@@ -80,10 +78,10 @@ class GameLogic {
             {
             }
 
-            q.possibilityOfThisIsNext = this.fuzz.Or(diffPosForReactions);
+            q.possibility_of_this_is_next = this.fuzz.Or(diffPosForReactions);
         });
 
-        this.QuestionsAll = this.QuestionsAll.sort((a, b ) => a.possibilityOfThisIsNext - b.possibilityOfThisIsNext);
+        this.QuestionsAll = this.QuestionsAll.sort((a, b ) => a.possibility_of_this_is_next - b.possibility_of_this_is_next);
     }
 
     ExactReactionOnQuestionRelativelyAnswerPossibility = async (react: string, q: Question, answersWithMaxPoss: Answer) => {

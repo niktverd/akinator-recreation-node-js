@@ -13,6 +13,7 @@ exports.up = function(knex) {
         table.string('text');
         table.boolean('hidden_from_ui');
         table.boolean('shown_only_for_doctors');
+        table.float('possibility_of_this_is_next');
         table.timestamps();
       }),
 
@@ -28,6 +29,14 @@ exports.up = function(knex) {
         table.integer('game_id');
         table.integer('question_id');
         table.integer('reaction_id');
+        table.timestamps();
+      }),
+
+    knex.schema.createTable('games', table => {
+        table.increments('id');
+        table.integer('user_id');
+        table.boolean('is_finished');
+        table.boolean('is_succeed');
         table.timestamps();
       }),
 
@@ -49,5 +58,6 @@ exports.up = function(knex) {
         knex.schema.dropTable('users'),
         knex.schema.dropTable('gameDetails'),
         knex.schema.dropTable('gameHistory'),
+        knex.schema.dropTable('games'),
     ]);
   };
