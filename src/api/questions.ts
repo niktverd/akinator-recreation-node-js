@@ -1,6 +1,6 @@
 import Question from "@/db/Question";
 
-export const getList = async () => {
+export const getList = () => {
     return Question.query().select();
 }
 
@@ -11,7 +11,7 @@ type AddArgs = {
     possibility_of_this_is_next: number;
 };
 
-export const add = async ({
+export const add = ({
     text,
     hidden_from_ui = false,
     shown_only_for_doctors = false,

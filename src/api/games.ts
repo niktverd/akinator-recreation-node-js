@@ -1,6 +1,6 @@
 import Game from "@/db/Game";
 
-export const getList = async () => {
+export const getList = () => {
     return Game.query().select();
 }
 
@@ -10,7 +10,7 @@ type AddArgs = {
     is_succeed: boolean;
 };
 
-export const add = async ({
+export const add = ({
     user_id,
     is_finished,
     is_succeed,

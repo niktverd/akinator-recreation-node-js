@@ -1,6 +1,6 @@
 import Answer from "@/db/Answer";
 
-export const getList = async () => {
+export const getList = () => {
     return Answer.query().select();
 }
 
@@ -8,7 +8,7 @@ type AddArgs = {
     text: string;
 };
 
-export const add = async ({
+export const add = ({
     text,
 }: AddArgs) => {
     return Answer.query().insert({
