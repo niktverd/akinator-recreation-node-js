@@ -6,9 +6,12 @@ import { GameHistory } from "./db";
 import { ApriorAnswerPossibilityType } from "@/common/types";
 import Helper from "@/fuzzy-logic/Helper";
 import axios from 'axios';
+import * as gameDetailsApi from '../../src/api/game-details';
 
 const fuzz = new Fuzz();
 const helper = new Helper();
+
+const ___variants: Record<string, Question> = {};
 
 export const Algorithm = {
     ReactionCountWhenThinkAboutAnswer: 'ReactionCountWhenThinkAboutAnswer',
@@ -25,15 +28,17 @@ type CalcPossibilitiesArgs = CalcQuestionIsNextPossibilityArgs
 export const calcPossibilities = async ({
     answersAll,
     questionsNotAsked,
+    isServer = false,
     ...rest
 }: CalcPossibilitiesArgs) => {
-    const sortedAnswersAll = await calcAnswersPossibilityAndSortByIt({...rest, answersAll});
+    const sortedAnswersAll = await calcAnswersPossibilityAndSortByIt({...rest, answersAll, isServer});
     const nextQuestion = await calcQuestionIsNextPossibility({
         answersAll: sortedAnswersAll,
         questionsNotAsked,
+        isServer,
     });
 
-    console.log({sortedAnswersAll});
+    // console.log({sortedAnswersAll});
     return [nextQuestion, sortedAnswersAll];
 }
 
@@ -60,11 +65,13 @@ export const calcAnswersPossibilityAndSortByIt = async ({
 type CalcQuestionIsNextPossibilityArgs = {
     answersAll: Answer[];
     questionsNotAsked: Question[];
+    isServer: boolean;
 };
 
 export const calcQuestionIsNextPossibility = async ({
     answersAll = [],
     questionsNotAsked = [],
+    isServer,
 }: CalcQuestionIsNextPossibilityArgs) => {
     if (questionsNotAsked.length == 0 || answersAll.length === 0) {
         return;
@@ -80,17 +87,25 @@ export const calcQuestionIsNextPossibility = async ({
             var tmp = exactReactionOnQuestionRelativelyAnswerPossibility({
                 reaction_id,
                 question,
-                answersWithMaxPoss
+                answersWithMaxPoss,
+                isServer,
             });
 
             // console.log({tmp});
 
             diffPosForReactionsPromises.push(tmp);
+
+            const t = await tmp;
+            if (isNaN(t)) {
+                console.log('NAN', t, question, reaction_id);
+            }
         });
 
         const diffPosForReactions = await Promise.all(diffPosForReactionsPromises);
-        // console.log({diffPosForReactions, f: fuzz.Or(diffPosForReactions)});
+        console.log({diffPosForReactions, f: fuzz.Or(diffPosForReactions)});
         // question.possibility_of_this_is_next = fuzz.Or(diffPosForReactions);
+        ___variants[fuzz.Or(diffPosForReactions).toFixed(5)] = question;
+        console.log({___variants});
         return {
             ...question,
             possibility_of_this_is_next: fuzz.Or(diffPosForReactions),
@@ -98,7 +113,7 @@ export const calcQuestionIsNextPossibility = async ({
     });
 
     const Q = await Promise.all(questionPromises);
-
+    // console.log(Q.map((q) => q.possibility_of_this_is_next));
     return Q.sort((a, b ) => a.possibility_of_this_is_next - b.possibility_of_this_is_next);
 }
 
@@ -106,12 +121,14 @@ type CalcCurrAnswerPossibilityArgs = CalcApriorAnswerPossibilityArgs & {
     questionsAll: Question[];
     answer: Answer;
     questionAndReactionHistory: GameHistory;
+    isServer: boolean;
 }
 
 export const calcCurrAnswerPossibility = async ({
     questionsAll,
     questionAndReactionHistory,
     answer,
+    isServer,
     ...calcApriorAnswerPossibilityArgs
 }: CalcCurrAnswerPossibilityArgs) => {
     if (Object.keys(questionAndReactionHistory).length == 0) {
@@ -130,6 +147,7 @@ export const calcCurrAnswerPossibility = async ({
                     reaction_id: react as unknown as number,
                     question,
                     answersWithMaxPoss: answer,
+                    isServer,
                 });
             Bj.push(rezPossibil);
         }
@@ -150,39 +168,66 @@ export const exactReactionOnQuestionRelativelyAnswerPossibility = async ({
     answersWithMaxPoss,
     question,
     reaction_id,
+    isServer,
 }: {
     reaction_id: number;
     question: Question;
     answersWithMaxPoss: Answer;
+    isServer: boolean;
 }) => {
-    let pBjAi;
+    let pBjAi, countOfExactReactionForThisQWhenThinkAboutAnswer, countOfQuestionAskedWhenThinkAboutAnswer;
 
-    const {data: {
-        count: countOfExactReactionForThisQWhenThinkAboutAnswer
-    }} = await axios.post('/api/game-details', {
-        algorithm: Algorithm.ReactionCountWhenThinkAboutAnswer,
-        answer_id: answersWithMaxPoss.id,
-        question_id: question.id,
-        reaction_id,
-    });
+    if (isServer) {
+        const countOfExactReactionForThisQWhenThinkAboutAnswerServer = await gameDetailsApi.getAnswerQuestionReactionPopularity({
+            answer_id: answersWithMaxPoss.id,
+            question_id: question.id,
+            reaction_id,
+        });
+        
+        countOfExactReactionForThisQWhenThinkAboutAnswer = Number(countOfExactReactionForThisQWhenThinkAboutAnswerServer[0].count) || 0;
 
-    const {data: {
-        count: countOfQuestionAskedWhenThinkAboutAnswer
-    }} = await axios.post('/api/game-details', {
-        algorithm: Algorithm.TimesAskedWhenThinkAbout,
-        answer_id: answersWithMaxPoss.id,
-        question_id: question.id,
-    });
+        const countOfQuestionAskedWhenThinkAboutAnswerServer = await gameDetailsApi.getAnswerQuestionPopularity({
+            answer_id: answersWithMaxPoss.id,
+            question_id: question.id,
+        });
+        
+        countOfQuestionAskedWhenThinkAboutAnswer = Number(countOfQuestionAskedWhenThinkAboutAnswerServer[0].count) || 0;
+        // console.log({
+        //     countOfQuestionAskedWhenThinkAboutAnswerServer,
+        //     countOfExactReactionForThisQWhenThinkAboutAnswerServer
+        // });
+    } else {
+
+        const {data: {
+            count: countOfExactReactionForThisQWhenThinkAboutAnswerClient
+        }} = await axios.post('/api/game-details', {
+            algorithm: Algorithm.ReactionCountWhenThinkAboutAnswer,
+            answer_id: answersWithMaxPoss.id,
+            question_id: question.id,
+            reaction_id,
+        });
+    
+        const {data: {
+            count: countOfQuestionAskedWhenThinkAboutAnswerClient
+        }} = await axios.post('/api/game-details', {
+            algorithm: Algorithm.TimesAskedWhenThinkAbout,
+            answer_id: answersWithMaxPoss.id,
+            question_id: question.id,
+        });
+
+        countOfExactReactionForThisQWhenThinkAboutAnswer = Number(countOfExactReactionForThisQWhenThinkAboutAnswerClient)
+        countOfQuestionAskedWhenThinkAboutAnswer = Number(countOfQuestionAskedWhenThinkAboutAnswerClient)
+    }
 
     // console.log({countOfExactReactionForThisQWhenThinkAboutAnswer, countOfQuestionAskedWhenThinkAboutAnswer});
-    if (Number(countOfExactReactionForThisQWhenThinkAboutAnswer) === 0) {
+    if (countOfExactReactionForThisQWhenThinkAboutAnswer === 0) {
         const reactionQuantity = Object.values(ReactionEnt).length;
 
         pBjAi = helper.Bayes(1, 1, reactionQuantity);
         // console.log({x: 1, pBjAi, countOfExactReactionForThisQWhenThinkAboutAnswer, reactionQuantity});
     } else {
         
-        pBjAi = helper.Bayes(1, Number(countOfExactReactionForThisQWhenThinkAboutAnswer), Number(countOfQuestionAskedWhenThinkAboutAnswer));
+        pBjAi = helper.Bayes(1, countOfExactReactionForThisQWhenThinkAboutAnswer, countOfQuestionAskedWhenThinkAboutAnswer || 1);
         // console.log({x: 2, pBjAi, countOfExactReactionForThisQWhenThinkAboutAnswer, countOfQuestionAskedWhenThinkAboutAnswer});
     }
 

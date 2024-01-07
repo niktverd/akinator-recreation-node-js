@@ -1,12 +1,12 @@
 import { Navigation } from "@/components/Navigation/Navigation";
-import { TestGame } from "@/components/TestGame/TestGame";
+import { TestGameServer } from "@/components/TestGame/TestGameServer";
 
 const Game = () => {
     return <div>
         <Navigation />
         <h1>Game</h1>
         <div>
-            <TestGame />
+            <TestGameServer />
         </div>
     </div>;
 }

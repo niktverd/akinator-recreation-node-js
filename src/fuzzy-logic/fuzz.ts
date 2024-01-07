@@ -23,11 +23,15 @@ class Fuzz {
     /// returns possibility of any of events
     /// </summary>
     Or = (eventsPossibility: number[]) => {
-        this.helper.OutOfRangeCheck(eventsPossibility);
+        const arr = eventsPossibility.map((item) => {
+            return isNaN(item) ? 0 : item;
+        })
 
-        var summ = eventsPossibility.reduce((p, x) => p + x, 0);
+        this.helper.OutOfRangeCheck(arr);
 
-        return summ / eventsPossibility.length;
+        var summ = arr.reduce((p, x) => p + x, 0);
+
+        return summ / arr.length;
     }
 
     /// <summary>

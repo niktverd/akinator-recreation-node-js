@@ -38,6 +38,8 @@
     /// <param name="pB">possibility of eventB in general</param>
     /// <returns>pAB - possibility of eventA relatively to eventB</returns>
     Bayes = (pBA: number, pA: number, pB = 0.5) => {
+        console.log({pBA, pA, pB});
+
         return (pBA * pA) / pB;
     }
 }

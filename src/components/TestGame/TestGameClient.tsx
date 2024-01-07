@@ -16,7 +16,7 @@ const apriorAnswerPossibilityType: ApriorAnswerPossibilityType = ApriorAnswerPos
 // const fuzz = new Fuzz();
 
 
-export const TestGame = () => {
+export const TestGameClient = () => {
     const [userId] = useState(Math.round(Math.random() * 9999999))
     const [game, setGame] = useState<Game | null>(null)
     const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
@@ -72,6 +72,7 @@ export const TestGame = () => {
                 gamesCount,
                 questionsAll,
                 questionAndReactionHistory,
+                isServer: false,
             });
             const mostPossibleQuestion = questions?.sort((a, b) => b.possibility_of_this_is_next - a.possibility_of_this_is_next)[0];
             setCurrentQuestion(mostPossibleQuestion as Question);
@@ -89,7 +90,7 @@ export const TestGame = () => {
         });
     }, [questionAndReactionHistory]);
 
-    console.log(currentQuestion);
+    // console.log(currentQuestion);
     if (!game) {
         return <div>
             <div>

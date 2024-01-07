@@ -19,28 +19,28 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
     try {
         const {algorithm} = req.body;
 
-        if (algorithm === Algorithm.TimesAskedWhenThinkAbout) {
-            const {answer_id, question_id} = req.body;
+        // if (algorithm === Algorithm.TimesAskedWhenThinkAbout) {
+        //     const {answer_id, question_id} = req.body;
 
-            const result = await gameDetailsApi.getAnswerQuestionPopularity({
-                answer_id,
-                question_id,
-            });
+        //     const result = await gameDetailsApi.getAnswerQuestionPopularity({
+        //         answer_id,
+        //         question_id,
+        //     });
 
-            return res.status(201).json(result[0]);
-        }
+        //     return res.status(201).json(result[0]);
+        // }
 
-        if (algorithm === Algorithm.ReactionCountWhenThinkAboutAnswer) {
-            const {answer_id, question_id, reaction_id} = req.body;
+        // if (algorithm === Algorithm.ReactionCountWhenThinkAboutAnswer) {
+        //     const {answer_id, question_id, reaction_id} = req.body;
 
-            const result = await gameDetailsApi.getAnswerQuestionReactionPopularity({
-                answer_id,
-                question_id,
-                reaction_id,
-            });
+        //     const result = await gameDetailsApi.getAnswerQuestionReactionPopularity({
+        //         answer_id,
+        //         question_id,
+        //         reaction_id,
+        //     });
 
-            return res.status(201).json(result[0]);
-        }
+        //     return res.status(201).json(result[0]);
+        // }
 
         if (algorithm === Algorithm.SaveGameDetails) {
             const {game_id, question_id, reaction_id} = req.body;
