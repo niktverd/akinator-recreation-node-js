@@ -9,8 +9,9 @@ import { GameHistory } from "@/logic/db";
 import { ApriorAnswerPossibilityType } from "@/common/types";
 
 import {ReactionEnt} from '../../models/Reaction';
-import { Algorithm, calcPossibilities } from "@/logic/common";
+import { calcPossibilities } from "@/logic/common";
 import Game from "@/models/Game";
+import { Algorithm } from "@/common/constants";
 
 const apriorAnswerPossibilityType: ApriorAnswerPossibilityType = ApriorAnswerPossibilityType.Intelligent;
 // const fuzz = new Fuzz();
@@ -26,7 +27,6 @@ export const TestGameClient = () => {
     const [questionAndReactionHistory, setQuestionAndReactionHistory] = useState<GameHistory>({});
     const [gamesCount, setGamesCount] = useState(0);
     const [possibleAnswers, setPossibleAnswers] = useState<Answer[]>([]);
-    // console.log(Object.keys(ReactionEnt));
 
     const debugElement = useMemo(()=> {
         return (
@@ -50,9 +50,7 @@ export const TestGameClient = () => {
     ]);
 
     useEffect(() => {
-        // console.log('setQuestionsNotAsked', questionsAll, questionAndReactionHistory);
         setQuestionsNotAsked(questionsAll.filter((question) => {
-            // console.log('questionAndReactionHistory[question.id]', questionAndReactionHistory[question.id], question.id);
             return !(question.id in questionAndReactionHistory);
         }));
     }, [questionAndReactionHistory, questionsAll]);
@@ -90,7 +88,6 @@ export const TestGameClient = () => {
         });
     }, [questionAndReactionHistory]);
 
-    // console.log(currentQuestion);
     if (!game) {
         return <div>
             <div>
@@ -197,11 +194,6 @@ export const TestGameClient = () => {
                                         is_succeed: true,
                                     }),
                                 ]);
-                                console.log({
-                                    title: 'Завершение игры',
-                                    gameEnt,
-                                    gameHistory,
-                                })
                                 setGame(null);
                             }}
                         >
@@ -215,7 +207,4 @@ export const TestGameClient = () => {
             {debugElement}
         </div>
     );
-    // return <div>
-    //     empty
-    // </div>
 }

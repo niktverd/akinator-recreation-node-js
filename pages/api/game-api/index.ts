@@ -5,7 +5,7 @@ import * as questionReactionApi from '../../../src/api/questions-reactions';
 import * as questionApi from '../../../src/api/questions';
 import * as answerApi from '../../../src/api/answers';
 import * as gameHistoryApi from '../../../src/api/games-history';
-import { calcPossibilities } from '@/logic/common';
+import { calcPossibilities } from '@/logic/server';
 
 async function get(_req: NextApiRequest, res: NextApiResponse) {
     return res.status(404).json({message: 'method get is empty'});
@@ -13,10 +13,9 @@ async function get(_req: NextApiRequest, res: NextApiResponse) {
 
 async function post(req: NextApiRequest, res: NextApiResponse) {
     try {
-        const {game_id, question_id, reaction_id, apriorAnswerPossibilityType} = req.body;
+        const {game_id, question_id, reaction_id, apriorAnswerPossibilityType, mostPossibleAnswerId} = req.body;
         
         const {question, threeTopAnswers} = await transaction(Game, async (trx) => {
-            // save question - reaction
             await questionReactionApi.add({
                 game_id,
                 question_id,
@@ -52,9 +51,6 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
             const randomIndex = Math.floor(Math.random() * mostPossibleQuestionsOnly.length);
             const mostPossibleQuestion = mostPossibleQuestionsOnly. length ? mostPossibleQuestionsOnly[randomIndex] : null;
             const mostPossibleAnswers = answers?.sort((a, b) => b.possibility - a.possibility);
-            console.log({qLength: questions?.length, maxPossibilityOfThisIsNext, mostPossibleQuestionsOnlyLength: mostPossibleQuestionsOnly.length, mostPossibleQuestion, randomIndex});
-            // console.log('questions', questions);
-            // console.log('answers', answers);
 
             return {
                 question: mostPossibleQuestion,

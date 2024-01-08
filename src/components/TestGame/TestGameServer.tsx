@@ -9,6 +9,7 @@ import { ApriorAnswerPossibilityType } from "@/common/types";
 
 import {ReactionEnt} from '../../models/Reaction';
 import Game from "@/models/Game";
+import { Algorithm } from "@/common/constants";
 
 const apriorAnswerPossibilityType: ApriorAnswerPossibilityType = ApriorAnswerPossibilityType.Intelligent;
 
@@ -22,7 +23,6 @@ export const TestGameServer = () => {
     // const [questionAndReactionHistory, setQuestionAndReactionHistory] = useState<GameHistory>({});
     // const [gamesCount, setGamesCount] = useState(0);
     const [possibleAnswers, setPossibleAnswers] = useState<Answer[]>([]);
-    // console.log(Object.keys(ReactionEnt));
 
     const debugElement = useMemo(()=> {
         return (
@@ -57,7 +57,6 @@ export const TestGameServer = () => {
         f();
     }, [answersAll]);
 
-    // console.log(currentQuestion);
     if (!game) {
         return <div>
             <div>
@@ -93,8 +92,8 @@ export const TestGameServer = () => {
                             question_id: 0,
                             reaction_id: 0,
                             apriorAnswerPossibilityType,
+                            mostPossibleAnswerId: possibleAnswers?.[0]?.id,
                         });
-                        console.log('question, threeTopAnswers', question, threeTopAnswers)
 
                         setCurrentQuestion(question);
                         setPossibleAnswers(threeTopAnswers);
@@ -120,6 +119,12 @@ export const TestGameServer = () => {
                         return <button
                             key={reactionName}
                             onClick={async () => {
+                                await axios.post('/api/game-details', {
+                                    game_id: game.id,
+                                    question_id: currentQuestion.id,
+                                    reaction_id: reactionId,
+                                    algorithm: Algorithm.SaveGameDetails,
+                                });
                                 await axios.post('/api/game-api', {
                                     game_id: game.id,
                                     question_id: currentQuestion.id,
@@ -182,11 +187,6 @@ export const TestGameServer = () => {
                                         is_succeed: true,
                                     }),
                                 ]);
-                                console.log({
-                                    title: 'Завершение игры',
-                                    gameEnt,
-                                    gameHistory,
-                                })
                                 setGame(null);
                             }}
                         >

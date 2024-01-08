@@ -6,6 +6,7 @@ import { GameHistory } from "./db";
 import { ApriorAnswerPossibilityType } from "@/common/types";
 import Helper from "@/fuzzy-logic/Helper";
 import axios from 'axios';
+import * as gameDetailsApi from '../api/game-details';
 import { Algorithm } from "@/common/constants";
 
 const fuzz = new Fuzz();
@@ -23,6 +24,7 @@ export const calcPossibilities = async ({
     answersAll,
     questionsNotAsked,
     isServer = false,
+    mostPossibleAnswerId,
     ...rest
 }: CalcPossibilitiesArgs) => {
     const sortedAnswersAll = await calcAnswersPossibilityAndSortByIt({...rest, answersAll, isServer});
@@ -30,6 +32,7 @@ export const calcPossibilities = async ({
         answersAll: sortedAnswersAll,
         questionsNotAsked,
         isServer,
+        mostPossibleAnswerId,
     });
 
     return [nextQuestion, sortedAnswersAll];
@@ -59,18 +62,20 @@ type CalcQuestionIsNextPossibilityArgs = {
     answersAll: Answer[];
     questionsNotAsked: Question[];
     isServer: boolean;
+    mostPossibleAnswerId: number;
 };
 
 export const calcQuestionIsNextPossibility = async ({
     answersAll = [],
     questionsNotAsked = [],
     isServer,
+    mostPossibleAnswerId = -1,
 }: CalcQuestionIsNextPossibilityArgs) => {
     if (questionsNotAsked.length == 0 || answersAll.length === 0) {
         return;
     }
 
-    let answersWithMaxPoss = answersAll[0];
+    let answersWithMaxPoss = answersAll.find((a) => a.id === mostPossibleAnswerId) || answersAll[0];
 
     const questionPromises = questionsNotAsked.map(async (question) => {
         // let maxChangeOfPossibility = 0;
@@ -93,6 +98,8 @@ export const calcQuestionIsNextPossibility = async ({
         });
 
         const diffPosForReactions = await Promise.all(diffPosForReactionsPromises);
+        // question.possibility_of_this_is_next = fuzz.Or(diffPosForReactions);
+        ___variants[fuzz.Or(diffPosForReactions).toFixed(5)] = question;
         return {
             ...question,
             possibility_of_this_is_next: fuzz.Or(diffPosForReactions),
@@ -161,25 +168,46 @@ export const exactReactionOnQuestionRelativelyAnswerPossibility = async ({
 }) => {
     let pBjAi, countOfExactReactionForThisQWhenThinkAboutAnswer, countOfQuestionAskedWhenThinkAboutAnswer;
 
-    const {data: {
-        count: countOfExactReactionForThisQWhenThinkAboutAnswerClient
-    }} = await axios.post('/api/game-details', {
-        algorithm: Algorithm.ReactionCountWhenThinkAboutAnswer,
-        answer_id: answersWithMaxPoss.id,
-        question_id: question.id,
-        reaction_id,
-    });
+    if (isServer) {
+        const countOfExactReactionForThisQWhenThinkAboutAnswerServer = await gameDetailsApi.getAnswerQuestionReactionPopularity({
+            answer_id: answersWithMaxPoss.id,
+            question_id: question.id,
+            reaction_id,
+        });
+        
+        countOfExactReactionForThisQWhenThinkAboutAnswer = Number(countOfExactReactionForThisQWhenThinkAboutAnswerServer[0].count) || 0;
 
-    const {data: {
-        count: countOfQuestionAskedWhenThinkAboutAnswerClient
-    }} = await axios.post('/api/game-details', {
-        algorithm: Algorithm.TimesAskedWhenThinkAbout,
-        answer_id: answersWithMaxPoss.id,
-        question_id: question.id,
-    });
+        const countOfQuestionAskedWhenThinkAboutAnswerServer = await gameDetailsApi.getAnswerQuestionPopularity({
+            answer_id: answersWithMaxPoss.id,
+            question_id: question.id,
+        });
+        
+        countOfQuestionAskedWhenThinkAboutAnswer = Number(countOfQuestionAskedWhenThinkAboutAnswerServer[0].count) || 0;
+        //     countOfQuestionAskedWhenThinkAboutAnswerServer,
+        //     countOfExactReactionForThisQWhenThinkAboutAnswerServer
+        // });
+    } else {
 
-    countOfExactReactionForThisQWhenThinkAboutAnswer = Number(countOfExactReactionForThisQWhenThinkAboutAnswerClient)
-    countOfQuestionAskedWhenThinkAboutAnswer = Number(countOfQuestionAskedWhenThinkAboutAnswerClient)
+        const {data: {
+            count: countOfExactReactionForThisQWhenThinkAboutAnswerClient
+        }} = await axios.post('/api/game-details', {
+            algorithm: Algorithm.ReactionCountWhenThinkAboutAnswer,
+            answer_id: answersWithMaxPoss.id,
+            question_id: question.id,
+            reaction_id,
+        });
+    
+        const {data: {
+            count: countOfQuestionAskedWhenThinkAboutAnswerClient
+        }} = await axios.post('/api/game-details', {
+            algorithm: Algorithm.TimesAskedWhenThinkAbout,
+            answer_id: answersWithMaxPoss.id,
+            question_id: question.id,
+        });
+
+        countOfExactReactionForThisQWhenThinkAboutAnswer = Number(countOfExactReactionForThisQWhenThinkAboutAnswerClient)
+        countOfQuestionAskedWhenThinkAboutAnswer = Number(countOfQuestionAskedWhenThinkAboutAnswerClient)
+    }
 
     if (countOfExactReactionForThisQWhenThinkAboutAnswer === 0) {
         const reactionQuantity = Object.values(ReactionEnt).length;

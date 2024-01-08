@@ -1,7 +1,7 @@
-import { Algorithm } from '@/logic/common';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import * as gameDetailsApi from '../../../src/api/game-details';
+import { Algorithm } from '@/common/constants';
 
 
 async function get(_req: NextApiRequest, res: NextApiResponse) {
@@ -18,29 +18,6 @@ async function get(_req: NextApiRequest, res: NextApiResponse) {
 async function post(req: NextApiRequest, res: NextApiResponse) {
     try {
         const {algorithm} = req.body;
-
-        // if (algorithm === Algorithm.TimesAskedWhenThinkAbout) {
-        //     const {answer_id, question_id} = req.body;
-
-        //     const result = await gameDetailsApi.getAnswerQuestionPopularity({
-        //         answer_id,
-        //         question_id,
-        //     });
-
-        //     return res.status(201).json(result[0]);
-        // }
-
-        // if (algorithm === Algorithm.ReactionCountWhenThinkAboutAnswer) {
-        //     const {answer_id, question_id, reaction_id} = req.body;
-
-        //     const result = await gameDetailsApi.getAnswerQuestionReactionPopularity({
-        //         answer_id,
-        //         question_id,
-        //         reaction_id,
-        //     });
-
-        //     return res.status(201).json(result[0]);
-        // }
 
         if (algorithm === Algorithm.SaveGameDetails) {
             const {game_id, question_id, reaction_id} = req.body;
