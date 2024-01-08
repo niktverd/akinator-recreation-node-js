@@ -49,14 +49,17 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
                 return Math.max(acc, item.possibility_of_this_is_next);
             }, 0) || 0;
             const mostPossibleQuestionsOnly = questions?.filter((a) => a.possibility_of_this_is_next === maxPossibilityOfThisIsNext) || [];
-            const mostPossibleQuestion = mostPossibleQuestionsOnly. length ? mostPossibleQuestionsOnly[Math.ceil(Math.random() * mostPossibleQuestionsOnly.length)] : null;
+            const randomIndex = Math.floor(Math.random() * mostPossibleQuestionsOnly.length);
+            const mostPossibleQuestion = mostPossibleQuestionsOnly. length ? mostPossibleQuestionsOnly[randomIndex] : null;
             const mostPossibleAnswers = answers?.sort((a, b) => b.possibility - a.possibility);
+            console.log({qLength: questions?.length, maxPossibilityOfThisIsNext, mostPossibleQuestionsOnlyLength: mostPossibleQuestionsOnly.length, mostPossibleQuestion, randomIndex});
             // console.log('questions', questions);
             // console.log('answers', answers);
 
             return {
                 question: mostPossibleQuestion,
-                threeTopAnswers: mostPossibleAnswers?.slice(0,3) || []
+                // threeTopAnswers: mostPossibleAnswers?.slice(0,3) || []
+                threeTopAnswers: mostPossibleAnswers || []
             };
         })
 
