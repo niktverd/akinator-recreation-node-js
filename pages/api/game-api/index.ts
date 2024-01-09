@@ -26,9 +26,18 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
                 acc[qrh.question_id] = qrh.reaction_id;
                 return acc;
             }, {} as Record<number, number>);
-            const questionsAll = await questionApi.getList();
+            // const questionsAll = await questionApi.getList();
+            let questionsAll = await questionApi.getReleasedList(gameQuestionReactionHistory.map((qrh) => qrh.question_id));
+            console.log('questionsAll (getReleasedList)', questionsAll.length, gameQuestionReactionHistory.map((qrh) => qrh.question_id));
+            let questionsNotAsked = questionsAll.filter((question) => {
+                return !(question.id in questionAndReactionHistory);
+            });
+            if (questionsNotAsked.length === 0) {
+                questionsAll = await questionApi.getBasicList();
+            }
+            console.log('questionsAll', questionsAll.length);
             const answersAll = await answerApi.getList();
-            const questionsNotAsked = questionsAll.filter((question) => {
+            questionsNotAsked = questionsAll.filter((question) => {
                 return !(question.id in questionAndReactionHistory);
             });
             const gamesCountArray = await gameHistoryApi.getList().count();

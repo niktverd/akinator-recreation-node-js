@@ -15,6 +15,8 @@ export const Navigation = () => {
         {text: 'games', url: '/games'},
         {text: 'game-details', url: '/game-details'},
         {text: 'games-history', url: '/games-history'},
+        {text: 'question-release', url: '/relations/release'},
+        {text: 'question-block', url: '/relations/block'},
     ]);
 
     return (

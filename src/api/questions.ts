@@ -1,7 +1,22 @@
 import Question from "@/db/Question";
+import QuestionRelease from "@/db/QuestionRelease";
 
 export const getList = () => {
     return Question.query().select();
+}
+
+export const getBasicList = () => {
+    return Question.query().select()
+        .whereNotIn('id', QuestionRelease.query().select('released_question_id'))
+}
+
+export const getReleasedList = (reactedQuestionsList: number[]) => {
+    return Question.query()
+        .select()
+        .join('question_release as ms', 'questions.id', 'ms.released_question_id')
+        .leftJoin('question_block as bq', 'questions.id', 'bq.blocked_question_id')
+        .whereIn('ms.asked_question_id', reactedQuestionsList)
+        .whereNull('bq.blocked_question_id');
 }
 
 type AddArgs = {
