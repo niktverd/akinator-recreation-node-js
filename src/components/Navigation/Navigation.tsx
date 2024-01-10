@@ -11,9 +11,12 @@ export const Navigation = () => {
         {text: 'answers', url: '/answers'},
         {text: 'questions', url: '/questions'},
         {text: 'game', url: '/game'},
+        {text: 'game-server', url: '/game/server'},
         {text: 'games', url: '/games'},
         {text: 'game-details', url: '/game-details'},
         {text: 'games-history', url: '/games-history'},
+        {text: 'question-release', url: '/relations/release'},
+        {text: 'question-block', url: '/relations/block'},
     ]);
 
     return (

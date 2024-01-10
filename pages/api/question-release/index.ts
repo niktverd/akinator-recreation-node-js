@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import * as questionApi from '../../../src/api/questions';
+import * as questionReleaseApi from '../../../src/api/question-release';
 
 
-async function get(req: NextApiRequest, res: NextApiResponse) {
+async function get(_req: NextApiRequest, res: NextApiResponse) {
     try {
-        const questions = await questionApi.getList();
+        const questions = await questionReleaseApi.getList();
 
         return res.status(201).json(questions);
     } catch (error) {
@@ -16,12 +16,13 @@ async function get(req: NextApiRequest, res: NextApiResponse) {
 
 async function post(req: NextApiRequest, res: NextApiResponse) {
     try {
-        const {text, hidden_from_ui = false, shown_only_for_doctors = false, possibility_of_this_is_next = 0} = req.body;
-        await questionApi.add({
-            text,
-            hidden_from_ui,
-            shown_only_for_doctors,
-            possibility_of_this_is_next,
+        const {
+            id1,
+            id2,
+        } = req.body;
+        await questionReleaseApi.add({
+            asked_question_id: id1,
+            released_question_id: id2,
         });
 
         return await get(req, res);
@@ -34,9 +35,12 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
 async function patch(req: NextApiRequest, res: NextApiResponse) {
     try {
         const id = Number(req.query.id)
-        const {text} = req.body;
+        const {
+            id1,
+            id2,
+        } = req.body;
 
-        await questionApi.update({id, text});
+        await questionReleaseApi.update({id,  asked_question_id: id1, released_question_id: id2});
 
         return await get(req, res);
     } catch (error) {
@@ -48,7 +52,7 @@ async function patch(req: NextApiRequest, res: NextApiResponse) {
 async function del(req: NextApiRequest, res: NextApiResponse) {
     try {
         const id = Number(req.query.id)
-        await questionApi.remove(id);
+        await questionReleaseApi.remove(id);
 
         return await get(req, res);
     } catch (error) {

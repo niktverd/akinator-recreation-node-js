@@ -6,15 +6,14 @@ import knexConfig from '../../knexfile';
 const knex = Knex(knexConfig.development);
 Model.knex(knex);
 
-class Game extends Model {
+class QuestionRelease extends Model {
   static get tableName() {
-    return 'games';
+    return 'question_release';
   }
 
   id!: number;
-  user_id!: number;
-  is_finished!: boolean;
-  is_succeed!: boolean;
+  asked_question_id!: number;
+  released_question_id!: number;
 }
 
-export default Game;
+export default QuestionRelease;

@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import * as questionApi from '../../../src/api/questions';
+import * as questionBlockApi from '../../../src/api/question-block';
 
 
-async function get(req: NextApiRequest, res: NextApiResponse) {
+async function get(_req: NextApiRequest, res: NextApiResponse) {
     try {
-        const questions = await questionApi.getList();
+        const questions = await questionBlockApi.getList();
 
         return res.status(201).json(questions);
     } catch (error) {
@@ -16,12 +16,13 @@ async function get(req: NextApiRequest, res: NextApiResponse) {
 
 async function post(req: NextApiRequest, res: NextApiResponse) {
     try {
-        const {text, hidden_from_ui = false, shown_only_for_doctors = false, possibility_of_this_is_next = 0} = req.body;
-        await questionApi.add({
-            text,
-            hidden_from_ui,
-            shown_only_for_doctors,
-            possibility_of_this_is_next,
+        const {
+            id1,
+            id2,
+        } = req.body;
+        await questionBlockApi.add({
+            answered_question_id: id1,
+            blocked_question_id: id2,
         });
 
         return await get(req, res);
@@ -34,9 +35,12 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
 async function patch(req: NextApiRequest, res: NextApiResponse) {
     try {
         const id = Number(req.query.id)
-        const {text} = req.body;
+        const {
+            id1,
+            id2,
+        } = req.body;
 
-        await questionApi.update({id, text});
+        await questionBlockApi.update({id, answered_question_id: id1, blocked_question_id: id2});
 
         return await get(req, res);
     } catch (error) {
@@ -48,7 +52,7 @@ async function patch(req: NextApiRequest, res: NextApiResponse) {
 async function del(req: NextApiRequest, res: NextApiResponse) {
     try {
         const id = Number(req.query.id)
-        await questionApi.remove(id);
+        await questionBlockApi.remove(id);
 
         return await get(req, res);
     } catch (error) {
