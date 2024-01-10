@@ -1,95 +1,62 @@
 'use client'
 
 import axios from "axios";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Answer from "@/models/Answer";
 import Question from "@/models/Question";
 import { Debug } from "../Debug/Debug";
-import { GameHistory } from "@/logic/db";
 import { ApriorAnswerPossibilityType } from "@/common/types";
 
 import {ReactionEnt} from '../../models/Reaction';
-import { Algorithm, calcPossibilities } from "@/logic/common";
 import Game from "@/models/Game";
+import { Algorithm } from "@/common/constants";
 
 const apriorAnswerPossibilityType: ApriorAnswerPossibilityType = ApriorAnswerPossibilityType.Intelligent;
-// const fuzz = new Fuzz();
 
-
-export const TestGame = () => {
+export const TestGameServer = () => {
     const [userId] = useState(Math.round(Math.random() * 9999999))
     const [game, setGame] = useState<Game | null>(null)
     const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
-    const [questionsAll, setQuestionsAll] = useState<Question[]>([]);
-    const [questionsNotAsked, setQuestionsNotAsked] = useState<Question[]>([]);
+    // const [questionsAll, setQuestionsAll] = useState<Question[]>([]);
+    // const [questionsNotAsked, setQuestionsNotAsked] = useState<Question[]>([]);
     const [answersAll, setAnswersAll] = useState<Answer[]>([]);
-    const [questionAndReactionHistory, setQuestionAndReactionHistory] = useState<GameHistory>({});
-    const [gamesCount, setGamesCount] = useState(0);
+    // const [questionAndReactionHistory, setQuestionAndReactionHistory] = useState<GameHistory>({});
+    // const [gamesCount, setGamesCount] = useState(0);
     const [possibleAnswers, setPossibleAnswers] = useState<Answer[]>([]);
-    // console.log(Object.keys(ReactionEnt));
 
     const debugElement = useMemo(()=> {
         return (
             <div>
                 <h3>Debug</h3>
-                <Debug title="Questions" object={questionsAll} />
-                <Debug title="Answers" object={answersAll} />
-                <Debug title="Question And Reaction History" object={questionAndReactionHistory} />
                 <Debug title="Current question" object={{currentQuestion}} />
-                <Debug title="questionsNotAsked" object={questionsNotAsked} />
                 <Debug title="possibleAnswers" object={possibleAnswers} />
             </div>
         ) as JSX.Element;
     }, [
-        answersAll,
         currentQuestion,
-        questionAndReactionHistory,
-        questionsAll,
-        questionsNotAsked,
         possibleAnswers,
     ]);
 
-    useEffect(() => {
-        // console.log('setQuestionsNotAsked', questionsAll, questionAndReactionHistory);
-        setQuestionsNotAsked(questionsAll.filter((question) => {
-            // console.log('questionAndReactionHistory[question.id]', questionAndReactionHistory[question.id], question.id);
-            return !(question.id in questionAndReactionHistory);
-        }));
-    }, [questionAndReactionHistory, questionsAll]);
-
-    useEffect(() => {
-        if (questionsNotAsked.length) {
-            setCurrentQuestion(questionsNotAsked[0]);
-        }
-    }, [questionsNotAsked]);
 
     useEffect(() => {
         const f = async () => {
-            const [questions, answers] = await calcPossibilities({
-                answersAll,
-                questionsNotAsked,
-                apriorAnswerPossibilityType,
-                gamesCount,
-                questionsAll,
-                questionAndReactionHistory,
-            });
-            const mostPossibleQuestion = questions?.sort((a, b) => b.possibility_of_this_is_next - a.possibility_of_this_is_next)[0];
-            setCurrentQuestion(mostPossibleQuestion as Question);
-            const mostPossibleAnswers = answers?.sort((a, b) => b.possibility - a.possibility);
-            setPossibleAnswers((mostPossibleAnswers?.slice(0,3) || []) as Answer[]);
+            // const [questions, answers] = await calcPossibilities({
+            //     answersAll,
+            //     questionsNotAsked,
+            //     apriorAnswerPossibilityType,
+            //     gamesCount,
+            //     questionsAll,
+            //     questionAndReactionHistory,
+            // });
+            // const mostPossibleQuestion = questions?.sort((a, b) => b.possibility_of_this_is_next - a.possibility_of_this_is_next)[0];
+            // setCurrentQuestion(mostPossibleQuestion as Question);
+            // const mostPossibleAnswers = answers?.sort((a, b) => b.possibility - a.possibility);
+            // setPossibleAnswers((mostPossibleAnswers?.slice(0,3) || []) as Answer[]);
         }
 
         f();
-    }, [answersAll, gamesCount, questionAndReactionHistory, questionsAll, questionsNotAsked]);
+    }, [answersAll]);
 
-    const answerOnQuestion = useCallback((question: Question, reaction_id: number) => {
-        setQuestionAndReactionHistory({
-            ...questionAndReactionHistory,
-            [question.id]: reaction_id,
-        });
-    }, [questionAndReactionHistory]);
-
-    console.log(currentQuestion);
     if (!game) {
         return <div>
             <div>
@@ -101,12 +68,10 @@ export const TestGame = () => {
             <div>
                 <button
                     onClick={async () => {
-                        setQuestionsAll([]);
-                        setAnswersAll([]);
-                        const [quests, answs, gh, gameEnt] = await Promise.all([
-                            axios.get('/api/questions'),
+                        // setQuestionsAll([]);
+                        // setAnswersAll([]);
+                        const [answs, gameEnt] = await Promise.all([
                             axios.get('/api/answers'),
-                            axios.get('/api/games-history?game_count=1'),
                             axios.post('/api/games', {
                                 user_id: userId,
                                 is_finished: false,
@@ -117,10 +82,21 @@ export const TestGame = () => {
                         // const answs = await axios.get('/api/answers');
                         // axios.get('/api/questions');
                         setGame(gameEnt.data as Game);
-                        setQuestionsAll(quests.data as Question[]);
-                        setCurrentQuestion(quests.data[0] as Question);
+                        // setQuestionsAll(quests.data as Question[]);
+                        // setCurrentQuestion(quests.data[0] as Question);
                         setAnswersAll(answs.data as Answer[]);
-                        setGamesCount(gh.data.gamesCount);
+                        // setGamesCount(gh.data.gamesCount);
+
+                        const {data: {question, threeTopAnswers}} = await axios.post('/api/game-api', {
+                            game_id: gameEnt.data.id,
+                            question_id: 0,
+                            reaction_id: 0,
+                            apriorAnswerPossibilityType,
+                            mostPossibleAnswerId: possibleAnswers?.[0]?.id,
+                        });
+
+                        setCurrentQuestion(question);
+                        setPossibleAnswers(threeTopAnswers);
                     }}
                 >
                     Start
@@ -149,7 +125,22 @@ export const TestGame = () => {
                                     reaction_id: reactionId,
                                     algorithm: Algorithm.SaveGameDetails,
                                 });
-                                answerOnQuestion(currentQuestion, reactionId as number)
+                                await axios.post('/api/game-api', {
+                                    game_id: game.id,
+                                    question_id: currentQuestion.id,
+                                    reaction_id: reactionId,
+                                    apriorAnswerPossibilityType,
+                                });
+
+                                const {data: {question, threeTopAnswers}} = await axios.post('/api/game-api', {
+                                    game_id: game.id,
+                                    question_id: currentQuestion.id,
+                                    reaction_id: reactionId,
+                                    apriorAnswerPossibilityType,
+                                });
+
+                                setCurrentQuestion(question);
+                                setPossibleAnswers(threeTopAnswers);
                             }}
                         >{reactionName}</button>
                     })}
@@ -160,7 +151,7 @@ export const TestGame = () => {
             <div style={{display: 'flex', flexWrap: 'wrap'}}>
             {possibleAnswers.map((answ) => {
                 return <div key={answ.id} style={{padding: 5, margin: 5, backgroundColor: 'lightgreen'}}>
-                    {answ.text} {answ.possibility.toFixed(4)}
+                    {answ.text} {answ.possibility ? answ.possibility.toFixed(4) : null}
                 </div>
             })}
             </div>
@@ -196,11 +187,6 @@ export const TestGame = () => {
                                         is_succeed: true,
                                     }),
                                 ]);
-                                console.log({
-                                    title: 'Завершение игры',
-                                    gameEnt,
-                                    gameHistory,
-                                })
                                 setGame(null);
                             }}
                         >

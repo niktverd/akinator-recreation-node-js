@@ -1,10 +1,11 @@
-import Game from '@/db/Game';
 import type { NextApiRequest, NextApiResponse } from 'next';
+
+import * as gamesApi from '../../../src/api/games';
 
 
 async function get(_req: NextApiRequest, res: NextApiResponse) {
     try {
-        const games = await Game.query().select();
+        const games = await gamesApi.getList();
 
         return res.status(201).json(games);
     } catch (error) {
@@ -16,7 +17,7 @@ async function get(_req: NextApiRequest, res: NextApiResponse) {
 async function post(req: NextApiRequest, res: NextApiResponse) {
     try {
         const {user_id, is_finished, is_succeed} = req.body;
-        const newGame = await Game.query().insert({
+        const newGame = await gamesApi.add({
             user_id,
             is_finished,
             is_succeed
@@ -32,7 +33,8 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
 async function patch(req: NextApiRequest, res: NextApiResponse) {
     try {
         const {id, user_id, is_finished, is_succeed} = req.body;
-        const newGame = await Game.query().updateAndFetchById(id, {
+        const newGame = await gamesApi.update({
+            id,
             user_id,
             is_finished,
             is_succeed
@@ -46,7 +48,7 @@ async function patch(req: NextApiRequest, res: NextApiResponse) {
 }
 
 async function del(_req: NextApiRequest, res: NextApiResponse) {
-    return res.status(201).json({message: 'method delete is empty'});
+    return res.status(404).json({message: 'method delete is empty'});
 
 }
 
