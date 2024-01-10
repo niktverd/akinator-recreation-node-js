@@ -15,6 +15,7 @@ class GameDetail extends Model {
   game_id!: number;
   question_id!: number;
   reaction_id!: number;
+  count!: number;
 }
 
 export default GameDetail;

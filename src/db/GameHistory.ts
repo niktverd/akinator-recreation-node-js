@@ -16,6 +16,7 @@ class GameHistory extends Model {
   answer_id!: number;
   user_id!: number;
   approved_by_moderator!: number;
+  count?: number;
 }
 
 export default GameHistory;

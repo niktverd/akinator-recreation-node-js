@@ -6,6 +6,8 @@ import * as questionApi from '../../../src/api/questions';
 import * as answerApi from '../../../src/api/answers';
 import * as gameHistoryApi from '../../../src/api/games-history';
 import { calcPossibilities } from '@/logic/server';
+import Question from '@/models/Question';
+import Answer from '@/models/Answer';
 
 async function get(_req: NextApiRequest, res: NextApiResponse) {
     return res.status(404).json({message: 'method get is empty'});
@@ -42,15 +44,16 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
                 questionsAll,
                 questionAndReactionHistory,
                 isServer: true,
+                mostPossibleAnswerId,
             });
 
-            const maxPossibilityOfThisIsNext = questions?.reduce((acc, item) => {
+            const maxPossibilityOfThisIsNext = (questions as unknown as Question[] || []).reduce((acc, item) => {
                 return Math.max(acc, item.possibility_of_this_is_next);
             }, 0) || 0;
-            const mostPossibleQuestionsOnly = questions?.filter((a) => a.possibility_of_this_is_next === maxPossibilityOfThisIsNext) || [];
+            const mostPossibleQuestionsOnly = (questions as unknown as Question[] || []).filter((a) => a.possibility_of_this_is_next === maxPossibilityOfThisIsNext) || [];
             const randomIndex = Math.floor(Math.random() * mostPossibleQuestionsOnly.length);
             const mostPossibleQuestion = mostPossibleQuestionsOnly. length ? mostPossibleQuestionsOnly[randomIndex] : null;
-            const mostPossibleAnswers = answers?.sort((a, b) => b.possibility - a.possibility);
+            const mostPossibleAnswers = (answers as unknown as Answer[] || []).sort((a, b) => b.possibility - a.possibility);
 
             return {
                 question: mostPossibleQuestion,

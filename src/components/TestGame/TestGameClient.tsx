@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Answer from "@/models/Answer";
 import Question from "@/models/Question";
 import { Debug } from "../Debug/Debug";
-import { GameHistory } from "@/logic/db";
 import { ApriorAnswerPossibilityType } from "@/common/types";
 
 import {ReactionEnt} from '../../models/Reaction';
@@ -16,6 +15,8 @@ import { Algorithm } from "@/common/constants";
 const apriorAnswerPossibilityType: ApriorAnswerPossibilityType = ApriorAnswerPossibilityType.Intelligent;
 // const fuzz = new Fuzz();
 
+
+export type GameHistory = Record<number, number>;
 
 export const TestGameClient = () => {
     const [userId] = useState(Math.round(Math.random() * 9999999))
@@ -72,9 +73,9 @@ export const TestGameClient = () => {
                 questionAndReactionHistory,
                 isServer: false,
             });
-            const mostPossibleQuestion = questions?.sort((a, b) => b.possibility_of_this_is_next - a.possibility_of_this_is_next)[0];
+            const mostPossibleQuestion = (questions as unknown as Question[] || []).sort((a, b) => b.possibility_of_this_is_next - a.possibility_of_this_is_next)[0];
             setCurrentQuestion(mostPossibleQuestion as Question);
-            const mostPossibleAnswers = answers?.sort((a, b) => b.possibility - a.possibility);
+            const mostPossibleAnswers = (answers as unknown as Answer[] || []).sort((a, b) => b.possibility - a.possibility);
             setPossibleAnswers((mostPossibleAnswers?.slice(0,3) || []) as Answer[]);
         }
 

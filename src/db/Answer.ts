@@ -13,6 +13,8 @@ class Answer extends Model {
 
   id!: number;
   text!: string;
+  possibility!: number;
+  countOfGamesWhenWasAsTarget!: number;
 }
 
 export default Answer;

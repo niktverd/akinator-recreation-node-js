@@ -2,12 +2,12 @@ import Fuzz from "@/fuzzy-logic/fuzz";
 import Answer from "@/models/Answer";
 import Question from "@/models/Question";
 import { ReactionEnt } from "@/models/Reaction";
-import { GameHistory } from "./db";
 import { ApriorAnswerPossibilityType } from "@/common/types";
 import Helper from "@/fuzzy-logic/Helper";
 import axios from 'axios';
 import * as gameDetailsApi from '../api/game-details';
 import { Algorithm } from "@/common/constants";
+import { GameHistory } from "@/components/TestGame/TestGameClient";
 
 const fuzz = new Fuzz();
 const helper = new Helper();
@@ -76,7 +76,6 @@ export const calcQuestionIsNextPossibility = async ({
     }
 
     let answersWithMaxPoss = answersAll.find((a) => a.id === mostPossibleAnswerId) || answersAll[0];
-
     const questionPromises = questionsNotAsked.map(async (question) => {
         // let maxChangeOfPossibility = 0;
         const diffPosForReactionsPromises: Promise<number>[] = [];

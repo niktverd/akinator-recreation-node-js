@@ -57,6 +57,7 @@ export const TestGameServer = () => {
         f();
     }, [answersAll]);
 
+
     if (!game) {
         return <div>
             <div>
@@ -125,18 +126,20 @@ export const TestGameServer = () => {
                                     reaction_id: reactionId,
                                     algorithm: Algorithm.SaveGameDetails,
                                 });
-                                await axios.post('/api/game-api', {
-                                    game_id: game.id,
-                                    question_id: currentQuestion.id,
-                                    reaction_id: reactionId,
-                                    apriorAnswerPossibilityType,
-                                });
+                                // await axios.post('/api/game-api', {
+                                //     game_id: game.id,
+                                //     question_id: currentQuestion.id,
+                                //     reaction_id: reactionId,
+                                //     apriorAnswerPossibilityType,
+                                //     mostPossibleAnswerId: possibleAnswers?.[0]?.id,
+                                // });
 
                                 const {data: {question, threeTopAnswers}} = await axios.post('/api/game-api', {
                                     game_id: game.id,
                                     question_id: currentQuestion.id,
                                     reaction_id: reactionId,
                                     apriorAnswerPossibilityType,
+                                    mostPossibleAnswerId: possibleAnswers?.[0]?.id,
                                 });
 
                                 setCurrentQuestion(question);

@@ -2,11 +2,11 @@ import Fuzz from "@/fuzzy-logic/fuzz";
 import Answer from "@/models/Answer";
 import Question from "@/models/Question";
 import { ReactionEnt } from "@/models/Reaction";
-import { GameHistory } from "./db";
 import { ApriorAnswerPossibilityType } from "@/common/types";
 import Helper from "@/fuzzy-logic/Helper";
 import axios from 'axios';
 import { Algorithm } from "@/common/constants";
+import { GameHistory } from "@/components/TestGame/TestGameClient";
 
 const fuzz = new Fuzz();
 const helper = new Helper();
