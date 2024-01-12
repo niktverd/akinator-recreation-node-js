@@ -17,7 +17,7 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
     try {
         const {game_id, question_id, reaction_id, apriorAnswerPossibilityType, mostPossibleAnswerId} = req.body;
         
-        const {question, threeTopAnswers} = await transaction(Game, async (trx) => {
+        const {question, threeTopAnswers, gameQuestionReactionHistoryLength} = await transaction(Game, async (trx) => {
             await questionReactionApi.add({
                 game_id,
                 question_id,
@@ -58,13 +58,15 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
             return {
                 question: mostPossibleQuestion,
                 // threeTopAnswers: mostPossibleAnswers?.slice(0,3) || []
-                threeTopAnswers: mostPossibleAnswers || []
+                threeTopAnswers: mostPossibleAnswers || [],
+                gameQuestionReactionHistoryLength: gameQuestionReactionHistory.length,
             };
         })
 
         return res.status(201).json({
             question,
             threeTopAnswers,
+            gameQuestionReactionHistoryLength,
         });
     } catch (error) {
         console.error(error);

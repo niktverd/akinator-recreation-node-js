@@ -12,6 +12,7 @@ export const Navigation = () => {
         {text: 'questions', url: '/questions'},
         {text: 'game', url: '/game'},
         {text: 'game-server', url: '/game/server'},
+        {text: 'game-public', url: '/game/public'},
         {text: 'games', url: '/games'},
         {text: 'game-details', url: '/game-details'},
         {text: 'games-history', url: '/games-history'},
