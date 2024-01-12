@@ -16,6 +16,7 @@ const apriorAnswerPossibilityType: ApriorAnswerPossibilityType = ApriorAnswerPos
 export const TestGameServer = () => {
     const [userId] = useState(Math.round(Math.random() * 9999999))
     const [game, setGame] = useState<Game | null>(null)
+    const [reactions, setReactions] = useState<any[]>([])
     const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
     // const [questionsAll, setQuestionsAll] = useState<Question[]>([]);
     // const [questionsNotAsked, setQuestionsNotAsked] = useState<Question[]>([]);
@@ -40,18 +41,6 @@ export const TestGameServer = () => {
 
     useEffect(() => {
         const f = async () => {
-            // const [questions, answers] = await calcPossibilities({
-            //     answersAll,
-            //     questionsNotAsked,
-            //     apriorAnswerPossibilityType,
-            //     gamesCount,
-            //     questionsAll,
-            //     questionAndReactionHistory,
-            // });
-            // const mostPossibleQuestion = questions?.sort((a, b) => b.possibility_of_this_is_next - a.possibility_of_this_is_next)[0];
-            // setCurrentQuestion(mostPossibleQuestion as Question);
-            // const mostPossibleAnswers = answers?.sort((a, b) => b.possibility - a.possibility);
-            // setPossibleAnswers((mostPossibleAnswers?.slice(0,3) || []) as Answer[]);
         }
 
         f();
@@ -88,7 +77,7 @@ export const TestGameServer = () => {
                         setAnswersAll(answs.data as Answer[]);
                         // setGamesCount(gh.data.gamesCount);
 
-                        const {data: {question, threeTopAnswers}} = await axios.post('/api/game-api', {
+                        const {data: {question, threeTopAnswers, reactions}} = await axios.post('/api/game-api', {
                             game_id: gameEnt.data.id,
                             question_id: 0,
                             reaction_id: 0,
@@ -98,6 +87,7 @@ export const TestGameServer = () => {
 
                         setCurrentQuestion(question);
                         setPossibleAnswers(threeTopAnswers);
+                        setReactions(reactions);
                     }}
                 >
                     Start
@@ -116,36 +106,30 @@ export const TestGameServer = () => {
                         display: 'flex',
                     }}
                 >
-                    {Object.entries(ReactionEnt).filter(([, value]) => typeof value === 'number').map(([reactionName, reactionId]) => {
+                    {reactions.map((reaction) => {
                         return <button
-                            key={reactionName}
+                            key={reaction.id}
                             onClick={async () => {
                                 await axios.post('/api/game-details', {
                                     game_id: game.id,
                                     question_id: currentQuestion.id,
-                                    reaction_id: reactionId,
+                                    reaction_id: reaction.id,
                                     algorithm: Algorithm.SaveGameDetails,
                                 });
-                                // await axios.post('/api/game-api', {
-                                //     game_id: game.id,
-                                //     question_id: currentQuestion.id,
-                                //     reaction_id: reactionId,
-                                //     apriorAnswerPossibilityType,
-                                //     mostPossibleAnswerId: possibleAnswers?.[0]?.id,
-                                // });
 
-                                const {data: {question, threeTopAnswers}} = await axios.post('/api/game-api', {
+                                const {data: {question, threeTopAnswers, reactions}} = await axios.post('/api/game-api', {
                                     game_id: game.id,
                                     question_id: currentQuestion.id,
-                                    reaction_id: reactionId,
+                                    reaction_id: reaction.id,
                                     apriorAnswerPossibilityType,
                                     mostPossibleAnswerId: possibleAnswers?.[0]?.id,
                                 });
 
                                 setCurrentQuestion(question);
                                 setPossibleAnswers(threeTopAnswers);
+                                setReactions(reactions);
                             }}
-                        >{reactionName}</button>
+                        >{reaction.slug}</button>
                     })}
                 </div>
             </div>}

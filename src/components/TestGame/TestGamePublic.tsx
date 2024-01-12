@@ -6,11 +6,11 @@ import Answer from "@/models/Answer";
 import Question from "@/models/Question";
 import { ApriorAnswerPossibilityType } from "@/common/types";
 
-import {ReactionEnt} from '../../models/Reaction';
 import Game from "@/models/Game";
 import { Algorithm } from "@/common/constants";
 
 import s from './TestGamePublic.module.css';
+import { ru } from "@/keysets";
 
 const apriorAnswerPossibilityType: ApriorAnswerPossibilityType = ApriorAnswerPossibilityType.Intelligent;
 
@@ -21,6 +21,7 @@ export const TestGamePublic = () => {
     const [possibleAnswers, setPossibleAnswers] = useState<Answer[]>([]);
     const [gameQuestionReactionHistoryLength, setGameQuestionReactionHistoryLength] = useState<number>(0);
     const [possibleAnswersString, setPossibleAnswersString] = useState<string>('');
+    const [reactions, setReactions] = useState<any[]>([])
 
     if (!game) {
         return <div>
@@ -37,7 +38,7 @@ export const TestGamePublic = () => {
                         ]);
                         setGame(gameEnt.data as Game);
 
-                        const {data: {question, threeTopAnswers, gameQuestionReactionHistoryLength}} = await axios.post('/api/game-api', {
+                        const {data: {question, threeTopAnswers, gameQuestionReactionHistoryLength, reactions}} = await axios.post('/api/game-api', {
                             game_id: gameEnt.data.id,
                             question_id: 0,
                             reaction_id: 0,
@@ -49,6 +50,7 @@ export const TestGamePublic = () => {
                         setPossibleAnswers(threeTopAnswers);
                         setGameQuestionReactionHistoryLength(gameQuestionReactionHistoryLength);
                         setPossibleAnswersString(threeTopAnswers.map((item: Answer) => item.text).join(', '))
+                        setReactions(reactions);
                     }}
                 >
                     Start
@@ -74,32 +76,33 @@ export const TestGamePublic = () => {
                         flexWrap: 'wrap',
                     }}
                 >
-                    {Object.entries(ReactionEnt).filter(([, value]) => typeof value === 'number').map(([reactionName, reactionId]) => {
+                    {reactions.map((reaction) => {
                         return <button
                             className={s.button}
 
-                            key={reactionName}
+                            key={reaction.id}
                             onClick={async () => {
                                 await axios.post('/api/game-details', {
                                     game_id: game.id,
                                     question_id: currentQuestion.id,
-                                    reaction_id: reactionId,
+                                    reaction_id: reaction.id,
                                     algorithm: Algorithm.SaveGameDetails,
                                 });
 
-                                const {data: {question, threeTopAnswers, gameQuestionReactionHistoryLength}} = await axios.post('/api/game-api', {
+                                const {data: {question, threeTopAnswers, gameQuestionReactionHistoryLength, reactions}} = await axios.post('/api/game-api', {
                                     game_id: game.id,
                                     question_id: currentQuestion.id,
-                                    reaction_id: reactionId,
+                                    reaction_id: reaction.id,
                                     apriorAnswerPossibilityType,
                                     mostPossibleAnswerId: possibleAnswers?.[0]?.id,
                                 });
-                            setGameQuestionReactionHistoryLength(gameQuestionReactionHistoryLength);
+                                setGameQuestionReactionHistoryLength(gameQuestionReactionHistoryLength);
 
                                 setCurrentQuestion(question);
                                 setPossibleAnswers(threeTopAnswers);
+                                setReactions(reactions);
                             }}
-                        >{reactionName}</button>
+                        >{ru[reaction.slug] ?? reaction.slug}</button>
                     })}
                 </div>
             </div>}

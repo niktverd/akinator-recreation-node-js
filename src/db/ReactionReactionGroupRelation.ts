@@ -7,16 +7,14 @@ const env = process.env.NEXT_PUBLIC_APP_ENV || 'development'
 const knex = Knex((knexConfig as Record<any, any>)[env]);
 Model.knex(knex);
 
-class GameDetail extends Model {
+class ReactionReactionGroupRelation extends Model {
   static get tableName() {
-    return 'gameDetails';
+    return 'reaction-reaction-group-relations';
   }
 
   id!: number;
-  game_id!: number;
-  question_id!: number;
   reaction_id!: number;
-  count!: number;
+  reaction_group_id!: number;
 }
 
-export default GameDetail;
+export default ReactionReactionGroupRelation;

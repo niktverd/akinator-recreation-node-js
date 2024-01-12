@@ -4,10 +4,12 @@ import { transaction } from 'objection';
 import * as questionReactionApi from '../../../src/api/questions-reactions';
 import * as questionApi from '../../../src/api/questions';
 import * as answerApi from '../../../src/api/answers';
+import * as reactionApi from '../../../src/api/reactions';
 import * as gameHistoryApi from '../../../src/api/games-history';
 import { calcPossibilities } from '@/logic/server';
 import Question from '@/models/Question';
 import Answer from '@/models/Answer';
+import Reaction from '@/db/Reaction';
 
 async function get(_req: NextApiRequest, res: NextApiResponse) {
     return res.status(404).json({message: 'method get is empty'});
@@ -17,7 +19,12 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
     try {
         const {game_id, question_id, reaction_id, apriorAnswerPossibilityType, mostPossibleAnswerId} = req.body;
         
-        const {question, threeTopAnswers, gameQuestionReactionHistoryLength} = await transaction(Game, async (trx) => {
+        const {
+            question,
+            threeTopAnswers,
+            gameQuestionReactionHistoryLength,
+            reactions,
+        } = await transaction(Game, async (trx) => {
             await questionReactionApi.add({
                 game_id,
                 question_id,
@@ -55,11 +62,19 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
             const mostPossibleQuestion = mostPossibleQuestionsOnly. length ? mostPossibleQuestionsOnly[randomIndex] : null;
             const mostPossibleAnswers = (answers as unknown as Answer[] || []).sort((a, b) => b.possibility - a.possibility);
 
+            let reactions: Reaction[] = [];
+            if (mostPossibleQuestion) {
+                reactions = await reactionApi.getReactionsByQuestionId(mostPossibleQuestion.id);
+            }
+
+            console.log({reactions});
+
             return {
                 question: mostPossibleQuestion,
                 // threeTopAnswers: mostPossibleAnswers?.slice(0,3) || []
                 threeTopAnswers: mostPossibleAnswers || [],
                 gameQuestionReactionHistoryLength: gameQuestionReactionHistory.length,
+                reactions,
             };
         })
 
@@ -67,6 +82,7 @@ async function post(req: NextApiRequest, res: NextApiResponse) {
             question,
             threeTopAnswers,
             gameQuestionReactionHistoryLength,
+            reactions,
         });
     } catch (error) {
         console.error(error);
